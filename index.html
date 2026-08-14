@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Feuille — Suivi alimentaire &amp; activité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg:#FAF6EF;
+  --surface:#FFFFFF;
+  --sage:#7C9885;
+  --sage-dark:#5B7A67;
+  --sage-light:#E7EEE4;
+  --blue:#AFC8DA;
+  --blue-light:#EAF2F7;
+  --cream:#F1E9DA;
+  --text:#2B2723;
+  --text-soft:#726B62;
+  --text-faint:#A39A8E;
+  --border:#E9E1D2;
+  --danger:#C4694F;
+  --success:#6E9C7D;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-sm:0 2px 10px rgba(60,48,32,0.05);
+  --shadow-md:0 10px 30px rgba(60,48,32,0.08);
+  --font-display:'Manrope', sans-serif;
+  --font-body:'DM Sans', sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%; display:block;}
+button{font-family:inherit; cursor:pointer;}
+input, select{font-family:inherit;}
+a{color:inherit;}
+.visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;}
+
+/* Focus visibility for accessibility */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible{
+  outline:3px solid var(--blue);
+  outline-offset:2px;
+  border-radius:8px;
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+#app{
+  max-width:1200px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.screen{
+  flex:1;
+  width:100%;
+  padding:20px 18px 110px;
+  animation:fadeUp .35s ease both;
+}
+@media (min-width:900px){
+  .screen{padding:32px 40px 60px;}
+}
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important; transition-duration:.001s !important;}
+}
+
+/* ============================================================
+   TOP NAV (desktop) + BOTTOM NAV (mobile)
+   ============================================================ */
+.topnav{
+  display:none;
+}
+@media (min-width:900px){
+  .topnav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 40px;
+    border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:40;
+    background:rgba(250,246,239,0.9);
+    backdrop-filter:blur(10px);
+  }
+  .topnav .brand{
+    font-family:var(--font-display); font-weight:800; font-size:20px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .topnav .brand .leaf{width:26px;height:26px;}
+  .topnav-links{display:flex; gap:6px;}
+  .topnav-links a{
+    padding:10px 16px; border-radius:100px; font-weight:700; font-size:14.5px;
+    text-decoration:none; color:var(--text-soft); transition:background .15s, color .15s;
+  }
+  .topnav-links a.active{background:var(--sage); color:#fff;}
+  .topnav-links a:not(.active):hover{background:var(--sage-light); color:var(--text);}
+}
+
+.bottomnav{
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-around;
+  padding:8px 6px calc(env(safe-area-inset-bottom,0px) + 8px);
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(60,48,32,0.06);
+}
+@media (min-width:900px){ .bottomnav{display:none;} }
+.bottomnav button{
+  background:none; border:none; display:flex; flex-direction:column; align-items:center;
+  gap:3px; padding:6px 10px; border-radius:14px; color:var(--text-faint);
+  font-size:11px; font-weight:700; min-width:56px;
+}
+.bottomnav button.active{color:var(--sage-dark);}
+.bottomnav svg{width:22px; height:22px;}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+h1,h2,h3{font-family:var(--font-display); font-weight:800; letter-spacing:-0.02em;}
+.h1{font-size:28px; line-height:1.15;}
+@media (min-width:900px){ .h1{font-size:36px;} }
+.h2{font-size:21px; line-height:1.2;}
+@media (min-width:900px){ .h2{font-size:25px;} }
+.h3{font-size:17px;}
+.eyebrow{
+  font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--sage-dark);
+}
+.subtle{color:var(--text-soft); font-size:15px;}
+.tiny{color:var(--text-faint); font-size:13px;}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:none; border-radius:100px; font-weight:700; font-size:15.5px;
+  padding:14px 22px; min-height:48px; transition:transform .12s ease, box-shadow .12s ease, background .15s;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--sage); color:#fff; box-shadow:0 6px 16px rgba(92,122,103,.28);}
+.btn-primary:hover{background:var(--sage-dark);}
+.btn-secondary{background:var(--sage-light); color:var(--sage-dark);}
+.btn-secondary:hover{background:#DCE6D8;}
+.btn-ghost{background:transparent; color:var(--text-soft); padding:10px 14px;}
+.btn-ghost:hover{background:var(--cream);}
+.btn-block{width:100%;}
+.btn-sm{padding:9px 16px; min-height:36px; font-size:14px;}
+.btn[disabled]{opacity:.45; cursor:not-allowed;}
+
+/* ============================================================
+   CARDS / SURFACES
+   ============================================================ */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  box-shadow:var(--shadow-sm);
+}
+.card-flat{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;
+}
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.field{margin-bottom:18px;}
+.field label{display:block; font-weight:700; font-size:14.5px; margin-bottom:8px;}
+.field input[type=number], .field input[type=text], .field select{
+  width:100%; border:1.5px solid var(--border); background:var(--surface);
+  border-radius:14px; padding:13px 16px; font-size:16px; color:var(--text);
+}
+.field input:focus, .field select:focus{border-color:var(--sage);}
+.field .error-msg{color:var(--danger); font-size:13.5px; margin-top:6px; font-weight:600;}
+.field.has-error input, .field.has-error select{border-color:var(--danger);}
+.field .hint{font-size:13px; color:var(--text-faint); margin-top:6px;}
+
+.choice-list{display:flex; flex-direction:column; gap:10px;}
+.choice-card{
+  border:1.5px solid var(--border); border-radius:16px; padding:14px 16px; text-align:left;
+  background:var(--surface); display:flex; flex-direction:column; gap:3px; transition:border-color .15s, background .15s;
+}
+.choice-card strong{font-size:15.5px;}
+.choice-card span{font-size:13.5px; color:var(--text-soft);}
+.choice-card.selected{border-color:var(--sage); background:var(--sage-light);}
+.choice-card:hover{border-color:var(--sage);}
+
+.segmented{display:flex; background:var(--sage-light); border-radius:100px; padding:4px; gap:4px;}
+.segmented button{
+  flex:1; border:none; background:none; padding:10px 6px; border-radius:100px; font-weight:700; font-size:14px; color:var(--sage-dark);
+}
+.segmented button.active{background:var(--sage); color:#fff;}
+
+/* ============================================================
+   PROGRESS RING (signature element)
+   ============================================================ */
+.ring-wrap{position:relative; width:172px; height:172px; margin:0 auto;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none; stroke:var(--sage-light); stroke-width:14;}
+.ring-fg{fill:none; stroke:var(--sage); stroke-width:14; stroke-linecap:round; transition:stroke-dashoffset .6s ease;}
+.ring-center{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+}
+.ring-center .num{font-family:var(--font-display); font-weight:800; font-size:26px;}
+.ring-center .lbl{font-size:12px; color:var(--text-soft); font-weight:600;}
+
+/* Organic blob accent */
+.blob{
+  position:absolute; background:var(--sage-light); z-index:0;
+  border-radius:62% 38% 55% 45% / 45% 55% 45% 55%;
+  filter:blur(0px); opacity:.7;
+}
+
+/* ============================================================
+   DASHBOARD HERO
+   ============================================================ */
+.hero-card{
+  position:relative; overflow:hidden;
+  background:linear-gradient(160deg, var(--sage-light) 0%, var(--surface) 62%);
+  border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:26px 20px 22px; text-align:center;
+}
+.hero-card .blob{width:200px; height:200px; top:-70px; right:-60px;}
+.hero-card .blob.b2{width:140px; height:140px; bottom:-60px; left:-50px; background:var(--blue-light);}
+.hero-card > *{position:relative; z-index:1;}
+
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
+@media (min-width:640px){ .stat-grid{grid-template-columns:repeat(4,1fr);} }
+.stat-box{
+  background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:16px 14px; text-align:center;
+}
+.stat-box .stat-icon{font-size:20px;}
+.stat-box .stat-num{font-family:var(--font-display); font-weight:800; font-size:21px; margin-top:4px;}
+.stat-box .stat-lbl{font-size:12.5px; color:var(--text-soft); font-weight:600; margin-top:2px;}
+
+/* ============================================================
+   MEAL / ACTIVITY LIST ROWS
+   ============================================================ */
+.section-block{margin-top:28px;}
+.section-head{display:flex; align-items:center; justify-content:between; justify-content:space-between; margin-bottom:12px;}
+
+.list-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:13px 15px; margin-bottom:9px;
+}
+.list-row .row-main{display:flex; align-items:center; gap:12px; min-width:0;}
+.list-row .row-icon{
+  width:38px; height:38px; border-radius:12px; background:var(--sage-light); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;
+}
+.list-row .row-title{font-weight:700; font-size:15px;}
+.list-row .row-sub{font-size:12.5px; color:var(--text-soft);}
+.list-row .row-kcal{font-weight:800; font-family:var(--font-display); font-size:15px; white-space:nowrap;}
+.list-row .row-del{background:none; border:none; color:var(--text-faint); padding:6px; border-radius:8px; font-size:17px; line-height:1;}
+.list-row .row-del:hover{color:var(--danger); background:#F6E9E5;}
+
+.empty-state{
+  text-align:center; padding:38px 20px; background:var(--surface); border:1.5px dashed var(--border); border-radius:20px;
+}
+.empty-state .emoji{font-size:34px; margin-bottom:10px;}
+.empty-state p{color:var(--text-soft); font-size:14.5px; margin:6px 0 16px; max-width:320px; margin-left:auto; margin-right:auto;}
+
+/* ============================================================
+   MENUS
+   ============================================================ */
+.menu-cat-scroller{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; margin-bottom:6px;}
+.menu-cat-pill{
+  flex-shrink:0; border:1.5px solid var(--border); background:var(--surface); border-radius:100px; padding:9px 18px; font-weight:700; font-size:14px; color:var(--text-soft);
+}
+.menu-cat-pill.active{background:var(--sage); border-color:var(--sage); color:#fff;}
+
+.recipe-grid{
+  display:grid; grid-template-columns:1fr; gap:16px; margin-top:16px;
+}
+@media (min-width:640px){ .recipe-grid{grid-template-columns:1fr 1fr;} }
+@media (min-width:1000px){ .recipe-grid{grid-template-columns:1fr 1fr 1fr;} }
+
+.recipe-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; text-align:left; width:100%; box-shadow:var(--shadow-sm);
+}
+.recipe-card .thumb{
+  height:118px; background:var(--sage-light); display:flex; align-items:center; justify-content:center; font-size:44px;
+  background:linear-gradient(135deg, var(--sage-light), var(--blue-light));
+}
+.recipe-card .body{padding:15px 16px 17px;}
+.recipe-card .title{font-weight:700; font-size:16px; margin-bottom:6px;}
+.recipe-card .kcal{font-family:var(--font-display); font-weight:800; color:var(--sage-dark); font-size:15px; margin-bottom:10px;}
+.macro-row{display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
+.macro-pill{font-size:12px; color:var(--text-soft); font-weight:600;}
+.recipe-card .meta{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text-faint); margin-bottom:12px;}
+
+/* ============================================================
+   MODAL / SHEET
+   ============================================================ */
+.overlay{
+  position:fixed; inset:0; background:rgba(35,30,24,.45); z-index:100;
+  display:flex; align-items:flex-end; justify-content:center;
+  animation:overlayIn .2s ease both;
+}
+@keyframes overlayIn{ from{opacity:0;} to{opacity:1;} }
+@media (min-width:640px){ .overlay{align-items:center;} }
+.sheet{
+  background:var(--bg); width:100%; max-width:560px; max-height:88vh; overflow-y:auto;
+  border-radius:26px 26px 0 0; padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px);
+  animation:sheetUp .28s cubic-bezier(.2,.8,.2,1) both;
+}
+@media (min-width:640px){ .sheet{border-radius:26px; padding:26px;} }
+@keyframes sheetUp{ from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+.sheet-handle{width:40px; height:4px; background:var(--border); border-radius:10px; margin:0 auto 16px;}
+@media (min-width:640px){ .sheet-handle{display:none;} }
+.sheet-close{position:absolute; top:16px; right:16px; background:var(--surface); border:1px solid var(--border); width:34px; height:34px; border-radius:50%; font-size:16px;}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast-host{position:fixed; bottom:90px; left:0; right:0; display:flex; justify-content:center; z-index:200; pointer-events:none;}
+@media (min-width:900px){ #toast-host{bottom:26px;} }
+.toast{
+  background:var(--text); color:#fff; padding:12px 20px; border-radius:100px; font-weight:700; font-size:14px;
+  display:flex; align-items:center; gap:8px; box-shadow:0 10px 26px rgba(0,0,0,.2);
+  animation:toastIn .3s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes toastIn{ from{opacity:0; transform:translateY(10px) scale(.95);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+/* ============================================================
+   ONBOARDING
+   ============================================================ */
+.onboard-shell{
+  min-height:100vh; display:flex; flex-direction:column; padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
+  max-width:520px; margin:0 auto;
+}
+.onboard-progress{display:flex; gap:6px; margin-bottom:28px;}
+.onboard-progress .seg{height:5px; flex:1; background:var(--border); border-radius:10px; overflow:hidden;}
+.onboard-progress .seg.done{background:var(--sage);}
+.onboard-body{flex:1;}
+.onboard-nav{display:flex; gap:10px; margin-top:26px;}
+
+.level-desc{font-size:13px; color:var(--text-soft); margin-top:2px;}
+
+.result-ring-screen{text-align:center; padding-top:10px;}
+.result-badge{
+  display:inline-flex; align-items:center; gap:8px; background:var(--sage-light); color:var(--sage-dark);
+  padding:7px 16px; border-radius:100px; font-weight:700; font-size:13px; margin-bottom:20px;
+}
+
+/* ============================================================
+   PROFILE
+   ============================================================ */
+.profile-row{display:flex; align-items:center; justify-content:space-between; padding:15px 4px; border-bottom:1px solid var(--border);}
+.profile-row:last-child{border-bottom:none;}
+.profile-row .lbl{color:var(--text-soft); font-size:14.5px;}
+.profile-row .val{font-weight:700; font-size:15px;}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.disclaimer{
+  background:var(--blue-light); border-radius:16px; padding:14px 16px; font-size:13px; color:var(--text-soft); line-height:1.55; margin-top:22px;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.disclaimer .ico{flex-shrink:0; font-size:16px;}
+
+.date-strip{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+.date-strip .nav-btn{background:var(--surface); border:1px solid var(--border); width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+
+.ingredient-row{display:grid; grid-template-columns:1fr 90px 34px; gap:8px; margin-bottom:9px; align-items:center;}
+.ingredient-row select, .ingredient-row input{padding:10px 12px; font-size:14px;}
+.ingredient-row .rm-ing{background:var(--cream); border:none; border-radius:10px; height:38px; font-size:16px; color:var(--text-soft);}
+
+.badge{display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:100px; background:var(--cream); color:var(--text-soft);}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div id="toast-host"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   1) DATA — FOODS DATABASE (per 100g / 100ml)
+   Source: ordres de grandeur usuels (tables nutritionnelles génériques).
+   Ces valeurs sont des estimations, cf. mention légale dans l'app.
+   ============================================================ */
+const FOODS_DB = [
+  {id:"avoine", name:"Flocons d'avoine", kcal:389, protein:16.9, carbs:66.3, fat:6.9},
+  {id:"lait", name:"Lait demi-écrémé", kcal:46, protein:3.3, carbs:4.8, fat:1.6},
+  {id:"banane", name:"Banane", kcal:89, protein:1.1, carbs:22.8, fat:0.3},
+  {id:"miel", name:"Miel", kcal:304, protein:0.3, carbs:82.4, fat:0},
+  {id:"oeuf", name:"Œufs", kcal:143, protein:12.6, carbs:0.7, fat:9.5},
+  {id:"pain_complet", name:"Pain complet", kcal:247, protein:10.7, carbs:41.3, fat:3.4},
+  {id:"avocat", name:"Avocat", kcal:160, protein:2, carbs:8.5, fat:14.7},
+  {id:"tomate", name:"Tomate", kcal:18, protein:0.9, carbs:3.9, fat:0.2},
+  {id:"fromage_blanc", name:"Fromage blanc 0%", kcal:45, protein:7.5, carbs:4, fat:0.2},
+  {id:"myrtilles", name:"Myrtilles", kcal:57, protein:0.7, carbs:14.5, fat:0.3},
+  {id:"amandes", name:"Amandes", kcal:579, protein:21.2, carbs:21.6, fat:49.9},
+  {id:"poulet", name:"Blanc de poulet", kcal:165, protein:31, carbs:0, fat:3.6},
+  {id:"riz_complet", name:"Riz complet cuit", kcal:123, protein:2.6, carbs:25.8, fat:1},
+  {id:"brocoli", name:"Brocoli", kcal:34, protein:2.8, carbs:6.6, fat:0.4},
+  {id:"huile_olive", name:"Huile d'olive", kcal:884, protein:0, carbs:0, fat:100},
+  {id:"saumon", name:"Saumon", kcal:208, protein:20.4, carbs:0, fat:13.4},
+  {id:"patate_douce", name:"Patate douce", kcal:86, protein:1.6, carbs:20.1, fat:0.1},
+  {id:"epinards", name:"Épinards", kcal:23, protein:2.9, carbs:3.6, fat:0.4},
+  {id:"yaourt_grec", name:"Yaourt grec", kcal:97, protein:9, carbs:3.6, fat:5},
+  {id:"quinoa", name:"Quinoa cuit", kcal:120, protein:4.4, carbs:21.3, fat:1.9},
+  {id:"lentilles", name:"Lentilles cuites", kcal:116, protein:9, carbs:20.1, fat:0.4},
+  {id:"feta", name:"Feta", kcal:264, protein:14.2, carbs:4.1, fat:21.3},
+  {id:"concombre", name:"Concombre", kcal:15, protein:0.7, carbs:3.6, fat:0.1},
+  {id:"thon", name:"Thon (conserve, au naturel)", kcal:116, protein:25.5, carbs:0, fat:0.8},
+  {id:"pomme", name:"Pomme", kcal:52, protein:0.3, carbs:13.8, fat:0.2},
+  {id:"beurre_cacahuete", name:"Beurre de cacahuète", kcal:588, protein:25, carbs:20, fat:50},
+  {id:"courgette", name:"Courgette", kcal:17, protein:1.2, carbs:3.1, fat:0.3},
+  {id:"champignons", name:"Champignons", kcal:22, protein:3.1, carbs:3.3, fat:0.3},
+  {id:"jambon", name:"Jambon blanc", kcal:145, protein:20, carbs:1.5, fat:6},
+  {id:"pates_completes", name:"Pâtes complètes cuites", kcal:124, protein:5, carbs:25, fat:1},
+  {id:"haricots_verts", name:"Haricots verts", kcal:31, protein:1.8, carbs:7, fat:0.1},
+  {id:"carotte", name:"Carotte", kcal:41, protein:0.9, carbs:10, fat:0.2},
+  {id:"graines_chia", name:"Graines de chia", kcal:486, protein:17, carbs:42, fat:31}
+];
+const foodById = id => FOODS_DB.find(f => f.id === id);
+
+/* ============================================================
+   2) DATA — MENUS (recettes prédéfinies)
+   ============================================================ */
+const MENUS = [
+  // ---- PETIT-DÉJEUNER ----
+  {id:"pdj1", cat:"petit-dejeuner", name:"Porridge banane & miel", emoji:"🥣", time:10, difficulty:"Facile",
+    ingredients:[{food:"avoine",g:50},{food:"lait",g:200},{food:"banane",g:100},{food:"miel",g:10}],
+    steps:["Faire chauffer le lait avec les flocons d'avoine 5 min à feu doux.","Verser dans un bol, ajouter la banane coupée en rondelles.","Terminer avec un filet de miel."]},
+  {id:"pdj2", cat:"petit-dejeuner", name:"Œufs, avocat & pain complet", emoji:"🍳", time:12, difficulty:"Facile",
+    ingredients:[{food:"oeuf",g:110},{food:"pain_complet",g:60},{food:"avocat",g:50}],
+    steps:["Faire cuire les œufs au plat ou brouillés.","Toaster le pain complet.","Écraser l'avocat sur le pain et déposer les œufs par-dessus."]},
+  {id:"pdj3", cat:"petit-dejeuner", name:"Yaourt grec, myrtilles & amandes", emoji:"🫐", time:5, difficulty:"Facile",
+    ingredients:[{food:"yaourt_grec",g:200},{food:"myrtilles",g:80},{food:"amandes",g:15},{food:"miel",g:10}],
+    steps:["Verser le yaourt grec dans un bol.","Ajouter les myrtilles et les amandes.","Terminer avec un filet de miel."]},
+  {id:"pdj4", cat:"petit-dejeuner", name:"Tartines avocat-tomate", emoji:"🥑", time:8, difficulty:"Facile",
+    ingredients:[{food:"pain_complet",g:70},{food:"avocat",g:80},{food:"tomate",g:60},{food:"huile_olive",g:5}],
+    steps:["Toaster le pain complet.","Écraser l'avocat et l'étaler sur les tartines.","Ajouter des rondelles de tomate et un filet d'huile d'olive."]},
+  {id:"pdj5", cat:"petit-dejeuner", name:"Bol fromage blanc & fruits", emoji:"🍓", time:5, difficulty:"Facile",
+    ingredients:[{food:"fromage_blanc",g:200},{food:"banane",g:100},{food:"myrtilles",g:50},{food:"graines_chia",g:10}],
+    steps:["Verser le fromage blanc dans un bol.","Ajouter la banane en rondelles et les myrtilles.","Saupoudrer de graines de chia."]},
+  {id:"pdj6", cat:"petit-dejeuner", name:"Smoothie bowl avoine-banane", emoji:"🥤", time:8, difficulty:"Facile",
+    ingredients:[{food:"avoine",g:40},{food:"lait",g:150},{food:"banane",g:120},{food:"beurre_cacahuete",g:15}],
+    steps:["Mixer l'avoine, le lait et la banane jusqu'à consistance lisse.","Verser dans un bol.","Ajouter une cuillère de beurre de cacahuète."]},
+
+  // ---- DÉJEUNER ----
+  {id:"dej1", cat:"dejeuner", name:"Poulet, riz complet & brocoli", emoji:"🍗", time:25, difficulty:"Facile",
+    ingredients:[{food:"poulet",g:150},{food:"riz_complet",g:150},{food:"brocoli",g:150},{food:"huile_olive",g:8}],
+    steps:["Faire cuire le riz complet selon les indications.","Cuire le poulet à la poêle ou au four.","Faire revenir le brocoli à la vapeur, assembler et arroser d'huile d'olive."]},
+  {id:"dej2", cat:"dejeuner", name:"Saumon, patate douce & épinards", emoji:"🐟", time:30, difficulty:"Intermédiaire",
+    ingredients:[{food:"saumon",g:130},{food:"patate_douce",g:180},{food:"epinards",g:100},{food:"huile_olive",g:6}],
+    steps:["Cuire la patate douce au four en dés, 25 min.","Poêler le saumon 4 min de chaque côté.","Faire tomber les épinards à la poêle avec l'huile d'olive."]},
+  {id:"dej3", cat:"dejeuner", name:"Salade quinoa, feta & concombre", emoji:"🥗", time:15, difficulty:"Facile",
+    ingredients:[{food:"quinoa",g:150},{food:"feta",g:50},{food:"concombre",g:100},{food:"tomate",g:80},{food:"huile_olive",g:10}],
+    steps:["Mélanger le quinoa cuit refroidi avec les légumes coupés en dés.","Émietter la feta par-dessus.","Assaisonner avec l'huile d'olive."]},
+  {id:"dej4", cat:"dejeuner", name:"Wrap complet poulet & crudités", emoji:"🌯", time:12, difficulty:"Facile",
+    ingredients:[{food:"pain_complet",g:60},{food:"poulet",g:120},{food:"tomate",g:60},{food:"avocat",g:50}],
+    steps:["Faire cuire et effilocher le poulet.","Garnir la tranche de pain complet avec le poulet, la tomate et l'avocat.","Rouler et déguster."]},
+  {id:"dej5", cat:"dejeuner", name:"Pâtes complètes au thon", emoji:"🍝", time:18, difficulty:"Facile",
+    ingredients:[{food:"pates_completes",g:200},{food:"thon",g:100},{food:"tomate",g:100},{food:"huile_olive",g:8}],
+    steps:["Cuire les pâtes complètes selon les indications.","Égoutter le thon et l'ajouter avec la tomate coupée.","Mélanger le tout avec l'huile d'olive."]},
+  {id:"dej6", cat:"dejeuner", name:"Bowl lentilles & légumes rôtis", emoji:"🥘", time:25, difficulty:"Intermédiaire",
+    ingredients:[{food:"lentilles",g:200},{food:"carotte",g:100},{food:"courgette",g:100},{food:"huile_olive",g:10},{food:"feta",g:30}],
+    steps:["Rôtir la carotte et la courgette au four 20 min avec l'huile d'olive.","Réchauffer les lentilles.","Assembler dans un bol et parsemer de feta."]},
+
+  // ---- DÎNER ----
+  {id:"din1", cat:"diner", name:"Soupe de légumes & jambon blanc", emoji:"🍲", time:25, difficulty:"Facile",
+    ingredients:[{food:"carotte",g:100},{food:"courgette",g:100},{food:"champignons",g:80},{food:"jambon",g:60},{food:"huile_olive",g:5}],
+    steps:["Faire revenir les légumes coupés dans l'huile d'olive.","Couvrir d'eau et laisser mijoter 20 min.","Mixer ou non, ajouter le jambon coupé en dés."]},
+  {id:"din2", cat:"diner", name:"Omelette champignons & salade", emoji:"🍳", time:12, difficulty:"Facile",
+    ingredients:[{food:"oeuf",g:100},{food:"champignons",g:80},{food:"huile_olive",g:5},{food:"concombre",g:100},{food:"tomate",g:80}],
+    steps:["Faire revenir les champignons dans l'huile d'olive.","Battre les œufs et verser sur les champignons, cuire en omelette.","Servir avec une salade concombre-tomate."]},
+  {id:"din3", cat:"diner", name:"Saumon vapeur & haricots verts", emoji:"🐟", time:20, difficulty:"Facile",
+    ingredients:[{food:"saumon",g:120},{food:"haricots_verts",g:150},{food:"huile_olive",g:6}],
+    steps:["Cuire le saumon à la vapeur 12 min.","Cuire les haricots verts à la vapeur.","Assaisonner d'un filet d'huile d'olive."]},
+  {id:"din4", cat:"diner", name:"Salade poulet, avocat & concombre", emoji:"🥗", time:12, difficulty:"Facile",
+    ingredients:[{food:"poulet",g:100},{food:"avocat",g:60},{food:"concombre",g:100},{food:"tomate",g:80},{food:"huile_olive",g:8}],
+    steps:["Faire cuire le poulet et le couper en morceaux.","Mélanger avec l'avocat, le concombre et la tomate.","Assaisonner avec l'huile d'olive."]},
+  {id:"din5", cat:"diner", name:"Velouté épinards & fromage blanc", emoji:"🥣", time:18, difficulty:"Facile",
+    ingredients:[{food:"epinards",g:200},{food:"fromage_blanc",g:100},{food:"patate_douce",g:100}],
+    steps:["Cuire la patate douce et les épinards à l'eau 15 min.","Mixer avec le fromage blanc jusqu'à consistance lisse.","Rectifier l'assaisonnement et servir chaud."]},
+  {id:"din6", cat:"diner", name:"Bol quinoa, légumes & feta légère", emoji:"🥙", time:20, difficulty:"Facile",
+    ingredients:[{food:"quinoa",g:100},{food:"courgette",g:100},{food:"carotte",g:80},{food:"feta",g:30},{food:"huile_olive",g:6}],
+    steps:["Cuire le quinoa selon les indications.","Faire revenir la courgette et la carotte râpées.","Assembler dans un bol et parsemer de feta."]}
+];
+const MENU_CATS = [
+  {id:"petit-dejeuner", label:"Petit-déjeuner", icon:"🌅"},
+  {id:"dejeuner", label:"Déjeuner", icon:"☀️"},
+  {id:"diner", label:"Dîner", icon:"🌙"}
+];
+
+/* ============================================================
+   3) DATA — ACTIVITÉS (valeurs MET approximatives)
+   ============================================================ */
+const ACTIVITIES_DB = [
+  {id:"marche", name:"Marche", icon:"🚶", met:3.5},
+  {id:"course", name:"Course à pied", icon:"🏃", met:8.0},
+  {id:"velo", name:"Vélo", icon:"🚲", met:6.0},
+  {id:"natation", name:"Natation", icon:"🏊", met:6.0},
+  {id:"randonnee", name:"Randonnée", icon:"🥾", met:5.3},
+  {id:"danse", name:"Danse", icon:"💃", met:4.8},
+  {id:"jardinage", name:"Jardinage", icon:"🌱", met:3.8},
+  {id:"doux", name:"Exercices doux", icon:"🧘", met:2.5},
+  {id:"autre", name:"Autre activité", icon:"⭐", met:4.0}
+];
+const activityById = id => ACTIVITIES_DB.find(a => a.id === id);
+
+const ACTIVITY_LEVELS = [
+  {id:"sedentaire", label:"Sédentaire", desc:"Peu ou pas d'exercice, travail assis", factor:1.2},
+  {id:"peu_actif", label:"Peu actif", desc:"Exercice léger 1 à 3 jours par semaine", factor:1.375},
+  {id:"modere", label:"Modérément actif", desc:"Exercice modéré 3 à 5 jours par semaine", factor:1.55},
+  {id:"actif", label:"Actif", desc:"Exercice intense 6 à 7 jours par semaine", factor:1.725},
+  {id:"tres_actif", label:"Très actif", desc:"Exercice quotidien intense ou travail physique", factor:1.9}
+];
+const levelById = id => ACTIVITY_LEVELS.find(l => l.id === id);
+
+/* ============================================================
+   4) CALCULATIONS — fonctions isolées et testables
+   ============================================================ */
+
+// Formule de Mifflin-St Jeor pour le métabolisme de base (BMR)
+function calculateBMR({age, sex, height, weight}){
+  const base = 10 * weight + 6.25 * height - 5 * age;
+  if(sex === "homme") return base + 5;
+  if(sex === "femme") return base - 161;
+  return base - 78; // moyenne pour "autre / préfère ne pas dire"
+}
+
+// Besoin énergétique quotidien estimé (TDEE)
+function calculateDailyEnergyNeeds({age, sex, height, weight, activityLevel}){
+  const bmr = calculateBMR({age, sex, height, weight});
+  const level = levelById(activityLevel) || ACTIVITY_LEVELS[0];
+  return Math.round(bmr * level.factor);
+}
+
+// Calories/macros totales d'une recette à partir de ses ingrédients
+function calculateRecipeTotals(ingredients){
+  return ingredients.reduce((tot, ing) => {
+    const food = foodById(ing.food);
+    if(!food) return tot;
+    const factor = ing.g / 100;
+    tot.kcal += food.kcal * factor;
+    tot.protein += food.protein * factor;
+    tot.carbs += food.carbs * factor;
+    tot.fat += food.fat * factor;
+    return tot;
+  }, {kcal:0, protein:0, carbs:0, fat:0});
+}
+
+function calculateCaloriesPerPortion(totals, portions){
+  if(!portions || portions <= 0) return totals;
+  return {
+    kcal: totals.kcal / portions,
+    protein: totals.protein / portions,
+    carbs: totals.carbs / portions,
+    fat: totals.fat / portions
+  };
+}
+
+// Calories dépensées à partir du MET, du poids et de la durée
+function calculateBurnedCalories({weight, met, durationMin, intensity}){
+  const intensityFactor = intensity === "leger" ? 0.8 : intensity === "intense" ? 1.2 : 1.0;
+  const adjustedMet = met * intensityFactor;
+  return (adjustedMet * 3.5 * weight / 200) * durationMin;
+}
+
+function calculateDailyTotal(day){
+  const consumed = (day.meals || []).reduce((s,m) => s + m.kcal, 0);
+  const burned = (day.activities || []).reduce((s,a) => s + a.kcal, 0);
+  return {consumed: Math.round(consumed), burned: Math.round(burned)};
+}
+
+function calculateWeeklyAverage(days){
+  const vals = Object.values(days);
+  if(!vals.length) return {avgConsumed:0, avgBurned:0, count:0};
+  let c=0,b=0;
+  vals.forEach(d => { const t = calculateDailyTotal(d); c += t.consumed; b += t.burned; });
+  return {avgConsumed: Math.round(c/vals.length), avgBurned: Math.round(b/vals.length), count: vals.length};
+}
+
+/* ============================================================
+   5) STORAGE — localStorage (façade isolée, migration future facilitée)
+   ============================================================ */
+const STORAGE_KEYS = {
+  profile: "nutriapp_profile_v1",
+  days: "nutriapp_days_v1",
+  onboarded: "nutriapp_onboarded_v1"
+};
+
+const Storage = {
+  getProfile(){
+    try{ const raw = localStorage.getItem(STORAGE_KEYS.profile); return raw ? JSON.parse(raw) : null; }
+    catch(e){ return null; }
+  },
+  setProfile(profile){
+    try{ localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile)); return true; }
+    catch(e){ return false; }
+  },
+  isOnboarded(){
+    return localStorage.getItem(STORAGE_KEYS.onboarded) === "1";
+  },
+  setOnboarded(){
+    localStorage.setItem(STORAGE_KEYS.onboarded, "1");
+  },
+  getAllDays(){
+    try{ const raw = localStorage.getItem(STORAGE_KEYS.days); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  },
+  getDay(dateStr){
+    const days = this.getAllDays();
+    return days[dateStr] || {date: dateStr, meals:[], activities:[]};
+  },
+  setDay(dateStr, dayData){
+    const days = this.getAllDays();
+    days[dateStr] = dayData;
+    try{ localStorage.setItem(STORAGE_KEYS.days, JSON.stringify(days)); return true; }
+    catch(e){ return false; }
+  }
+};
+
+/* ============================================================
+   6) UTIL
+   ============================================================ */
+function todayStr(){
+  const d = new Date();
+  return formatDateISO(d);
+}
+function formatDateISO(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function formatDateHuman(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  const opts = {weekday:"long", day:"numeric", month:"long"};
+  const s = d.toLocaleDateString("fr-FR", opts);
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function addDays(dateStr, n){
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return formatDateISO(d);
+}
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function round(n){ return Math.round(n); }
+function esc(s){ const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function showToast(msg, icon){
+  const host = document.getElementById("toast-host");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `<span>${icon||"✓"}</span><span>${esc(msg)}</span>`;
+  host.innerHTML = "";
+  host.appendChild(el);
+  setTimeout(() => { el.remove(); }, 2400);
+}
+
+/* ============================================================
+   7) APP STATE + ROUTER
+   ============================================================ */
+const State = {
+  route: "dashboard",
+  menuCat: "petit-dejeuner",
+  selectedDate: todayStr(),
+  onboardStep: 1,
+  onboardData: {age:null, sex:null, height:null, weight:null, activityLevel:null},
+  activeMenuModal: null,
+  activeActivityModal: false,
+  editingProfile: false
+};
+
+function navigate(route, opts){
+  State.route = route;
+  if(opts && opts.menuCat) State.menuCat = opts.menuCat;
+  render();
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   8) ICONS (inline SVG, no external deps)
+   ============================================================ */
+const ICONS = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>`,
+  meal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
+  activity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  leaf: `<svg class="leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13H2a10 10 0 0 0 10 10 10 10 0 0 0 10-10c0-5-4-10-11-10 3 3 3 7 0 10a5 5 0 0 1-7-7"/></svg>`
+};
+
+/* ============================================================
+   9) RENDER — SHELL
+   ============================================================ */
+function render(){
+  const app = document.getElementById("app");
+  if(!Storage.isOnboarded()){
+    app.innerHTML = renderOnboarding();
+    bindOnboarding();
+    return;
+  }
+
+  let screenHtml = "";
+  if(State.route === "dashboard") screenHtml = renderDashboard();
+  else if(State.route === "menus") screenHtml = renderMenus();
+  else if(State.route === "activite") screenHtml = renderActivite();
+  else if(State.route === "profil") screenHtml = renderProfil();
+
+  app.innerHTML = `
+    ${renderTopNav()}
+    <main class="screen">${screenHtml}</main>
+    ${renderBottomNav()}
+    ${State.activeMenuModal ? renderMenuModal(State.activeMenuModal) : ""}
+    ${State.activeActivityModal ? renderActivityModal() : ""}
+  `;
+  bindGlobalEvents();
+}
+
+function renderTopNav(){
+  const links = [
+    {id:"dashboard", label:"Accueil"},
+    {id:"menus", label:"Menus"},
+    {id:"activite", label:"Activité"},
+    {id:"profil", label:"Profil"}
+  ];
+  return `
+  <header class="topnav">
+    <div class="brand">${ICONS.leaf.replace('class="leaf"','width="24" height="24" style="color:var(--sage)"')}<span>Feuille</span></div>
+    <nav class="topnav-links">
+      ${links.map(l => `<a href="#" data-nav="${l.id}" class="${State.route===l.id?'active':''}">${l.label}</a>`).join("")}
+    </nav>
+  </header>`;
+}
+
+function renderBottomNav(){
+  const items = [
+    {id:"dashboard", label:"Accueil", icon:ICONS.home},
+    {id:"menus", label:"Repas", icon:ICONS.meal},
+    {id:"activite", label:"Activité", icon:ICONS.activity},
+    {id:"profil", label:"Profil", icon:ICONS.profile}
+  ];
+  return `
+  <nav class="bottomnav">
+    ${items.map(i => `
+      <button data-nav="${i.id}" class="${State.route===i.id?'active':''}" aria-label="${i.label}">
+        ${i.icon}<span>${i.label}</span>
+      </button>`).join("")}
+  </nav>`;
+}
+
+/* ============================================================
+   10) RENDER — ONBOARDING
+   ============================================================ */
+function renderOnboarding(){
+  const step = State.onboardStep;
+  const total = 4;
+  let body = "";
+
+  if(step === 1){
+    body = `
+      <span class="eyebrow">Étape 1 sur ${total}</span>
+      <h1 class="h1" style="margin-top:8px;">Commençons par votre âge</h1>
+      <p class="subtle" style="margin-top:8px;">Cette information nous aide à estimer votre besoin énergétique.</p>
+      <div class="field" id="field-age" style="margin-top:28px;">
+        <label for="input-age">Âge</label>
+        <input type="number" id="input-age" inputmode="numeric" placeholder="Ex. 32" min="1" max="120" value="${State.onboardData.age ?? ""}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>`;
+  } else if(step === 2){
+    body = `
+      <span class="eyebrow">Étape 2 sur ${total}</span>
+      <h1 class="h1" style="margin-top:8px;">Quelques informations supplémentaires</h1>
+      <p class="subtle" style="margin-top:8px;">Utilisées uniquement pour affiner votre estimation.</p>
+      <div class="field" style="margin-top:24px;">
+        <label>Sexe (pour la formule de calcul)</label>
+        <div class="choice-list">
+          ${["homme","femme","autre"].map(v => `
+            <button type="button" class="choice-card sex-choice ${State.onboardData.sex===v?'selected':''}" data-sex="${v}">
+              <strong>${v==="homme"?"Homme":v==="femme"?"Femme":"Autre / je préfère ne pas dire"}</strong>
+            </button>`).join("")}
+        </div>
+      </div>
+      <div class="field" id="field-height">
+        <label for="input-height">Taille (cm)</label>
+        <input type="number" id="input-height" inputmode="numeric" placeholder="Ex. 170" value="${State.onboardData.height ?? ""}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="field" id="field-weight">
+        <label for="input-weight">Poids (kg)</label>
+        <input type="number" id="input-weight" inputmode="numeric" placeholder="Ex. 68" value="${State.onboardData.weight ?? ""}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>`;
+  } else if(step === 3){
+    body = `
+      <span class="eyebrow">Étape 3 sur ${total}</span>
+      <h1 class="h1" style="margin-top:8px;">À quoi ressemble votre activité quotidienne ?</h1>
+      <div class="choice-list" style="margin-top:24px;">
+        ${ACTIVITY_LEVELS.map(l => `
+          <button type="button" class="choice-card level-choice ${State.onboardData.activityLevel===l.id?'selected':''}" data-level="${l.id}">
+            <strong>${l.label}</strong>
+            <span class="level-desc">${l.desc}</span>
+          </button>`).join("")}
+      </div>
+      <div class="error-msg" id="level-error" style="display:none; margin-top:4px;">Veuillez choisir un niveau d'activité.</div>`;
+  } else if(step === 4){
+    const needs = calculateDailyEnergyNeeds({
+      age: Number(State.onboardData.age),
+      sex: State.onboardData.sex,
+      height: Number(State.onboardData.height),
+      weight: Number(State.onboardData.weight),
+      activityLevel: State.onboardData.activityLevel
+    });
+    body = `
+      <div class="result-ring-screen">
+        <div class="result-badge">✨ Profil créé</div>
+        <h1 class="h1">Votre besoin énergétique estimé</h1>
+        <div class="ring-wrap" style="margin-top:28px;">
+          <svg viewBox="0 0 172 172" width="172" height="172">
+            <circle class="ring-bg" cx="86" cy="86" r="72"></circle>
+            <circle class="ring-fg" cx="86" cy="86" r="72" stroke-dasharray="452" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="ring-center">
+            <div class="num">≈ ${needs}</div>
+            <div class="lbl">kcal / jour</div>
+          </div>
+        </div>
+        <p class="subtle" style="margin-top:22px;">Cette estimation se recalcule automatiquement si vous modifiez votre profil.</p>
+        <div class="disclaimer" style="text-align:left;">
+          <span class="ico">ℹ️</span>
+          <span>Les informations fournies par cette application sont des estimations générales et ne remplacent pas l'avis d'un professionnel de santé.</span>
+        </div>
+      </div>`;
+  }
+
+  const progressSegs = Array.from({length: total}, (_,i) => `<div class="seg ${i < step ? 'done':''}"></div>`).join("");
+
+  return `
+  <div class="onboard-shell">
+    <div class="onboard-progress">${progressSegs}</div>
+    <div class="onboard-body">${body}</div>
+    <div class="onboard-nav">
+      ${step > 1 ? `<button class="btn btn-secondary" id="ob-back">Retour</button>` : ""}
+      ${step < 4 ? `<button class="btn btn-primary btn-block" id="ob-next">Continuer</button>` : `<button class="btn btn-primary btn-block" id="ob-finish">Découvrir mes menus</button>`}
+    </div>
+  </div>`;
+}
+
+function bindOnboarding(){
+  const app = document.getElementById("app");
+
+  app.querySelectorAll(".sex-choice").forEach(btn => {
+    btn.addEventListener("click", () => { State.onboardData.sex = btn.dataset.sex; render(); });
+  });
+  app.querySelectorAll(".level-choice").forEach(btn => {
+    btn.addEventListener("click", () => { State.onboardData.activityLevel = btn.dataset.level; render(); });
+  });
+
+  const back = document.getElementById("ob-back");
+  if(back) back.addEventListener("click", () => { State.onboardStep--; render(); });
+
+  const next = document.getElementById("ob-next");
+  if(next) next.addEventListener("click", onboardValidateAndNext);
+
+  const finish = document.getElementById("ob-finish");
+  if(finish) finish.addEventListener("click", () => {
+    Storage.setProfile({
+      age: Number(State.onboardData.age),
+      sex: State.onboardData.sex,
+      height: Number(State.onboardData.height),
+      weight: Number(State.onboardData.weight),
+      activityLevel: State.onboardData.activityLevel
+    });
+    Storage.setOnboarded();
+    State.route = "dashboard";
+    render();
+  });
+}
+
+function fieldError(fieldId, msg){
+  const field = document.getElementById(fieldId);
+  if(!field) return;
+  field.classList.add("has-error");
+  const em = field.querySelector(".error-msg");
+  em.textContent = msg;
+  em.style.display = "block";
+}
+function clearFieldError(fieldId){
+  const field = document.getElementById(fieldId);
+  if(!field) return;
+  field.classList.remove("has-error");
+  const em = field.querySelector(".error-msg");
+  if(em) em.style.display = "none";
+}
+
+function onboardValidateAndNext(){
+  const step = State.onboardStep;
+  let valid = true;
+
+  if(step === 1){
+    const ageVal = document.getElementById("input-age").value.trim();
+    const age = Number(ageVal);
+    clearFieldError("field-age");
+    if(!ageVal || isNaN(age) || age <= 0 || age > 120){
+      fieldError("field-age", "Veuillez renseigner un âge valide.");
+      valid = false;
+    } else {
+      State.onboardData.age = age;
+    }
+  }
+
+  if(step === 2){
+    clearFieldError("field-height"); clearFieldError("field-weight");
+    const heightVal = Number(document.getElementById("input-height").value);
+    const weightVal = Number(document.getElementById("input-weight").value);
+    if(!heightVal || heightVal <= 0 || heightVal > 260){
+      fieldError("field-height", "Veuillez renseigner une taille valide.");
+      valid = false;
+    } else { State.onboardData.height = heightVal; }
+    if(!weightVal || weightVal <= 0 || weightVal > 400){
+      fieldError("field-weight", "Indiquez votre poids pour effectuer l'estimation.");
+      valid = false;
+    } else { State.onboardData.weight = weightVal; }
+    if(!State.onboardData.sex){
+      valid = false;
+      showToast("Veuillez choisir une option.", "⚠️");
+    }
+  }
+
+  if(step === 3){
+    if(!State.onboardData.activityLevel){
+      document.getElementById("level-error").style.display = "block";
+      valid = false;
+    }
+  }
+
+  if(valid){
+    State.onboardStep++;
+    render();
+  }
+}
+
+/* ============================================================
+   11) RENDER — DASHBOARD
+   ============================================================ */
+function renderDashboard(){
+  const profile = Storage.getProfile();
+  const day = Storage.getDay(State.selectedDate);
+  const needs = calculateDailyEnergyNeeds(profile);
+  const totals = calculateDailyTotal(day);
+  const pct = Math.min(100, Math.round((totals.consumed / needs) * 100)) || 0;
+  const circumference = 452;
+  const offset = circumference - (circumference * Math.min(pct,100) / 100);
+
+  const isToday = State.selectedDate === todayStr();
+  const greeting = isToday ? "Bonjour 👋" : formatDateHuman(State.selectedDate);
+
+  const mealsByCategory = groupMealsByCategory(day.meals);
+
+  return `
+    <div class="date-strip">
+      <h2 class="h2">${greeting}</h2>
+      <div style="display:flex; gap:6px;">
+        <button class="nav-btn" id="date-prev" aria-label="Jour précédent">‹</button>
+        ${!isToday ? `<button class="btn btn-ghost btn-sm" id="date-today">Aujourd'hui</button>` : ""}
+        <button class="nav-btn" id="date-next" aria-label="Jour suivant" ${addDays(State.selectedDate,1) > todayStr() ? "disabled" : ""}>›</button>
+      </div>
+    </div>
+    <p class="subtle" style="margin-bottom:18px;">${isToday ? "Votre journée" : "Résumé de la journée"}</p>
+
+    <div class="hero-card">
+      <div class="blob"></div>
+      <div class="blob b2"></div>
+      <div class="eyebrow">Besoin estimé</div>
+      <div class="ring-wrap" style="margin-top:12px;">
+        <svg viewBox="0 0 172 172" width="172" height="172">
+          <circle class="ring-bg" cx="86" cy="86" r="72"></circle>
+          <circle class="ring-fg" cx="86" cy="86" r="72" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"></circle>
+        </svg>
+        <div class="ring-center">
+          <div class="num">${totals.consumed}</div>
+          <div class="lbl">sur ≈ ${needs} kcal</div>
+        </div>
+      </div>
+      <p class="tiny" style="margin-top:14px;">Comparaison avec votre estimation quotidienne — pas une limite à respecter.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-icon">🍽️</div><div class="stat-num">${totals.consumed}</div><div class="stat-lbl">kcal repas</div></div>
+      <div class="stat-box"><div class="stat-icon">🔥</div><div class="stat-num">${totals.burned}</div><div class="stat-lbl">kcal activité</div></div>
+      <div class="stat-box"><div class="stat-icon">🎯</div><div class="stat-num">≈ ${needs}</div><div class="stat-lbl">besoin estimé</div></div>
+      <div class="stat-box"><div class="stat-icon">📊</div><div class="stat-num">${pct}%</div><div class="stat-lbl">de l'estimation</div></div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <h3 class="h3">Repas</h3>
+        <button class="btn btn-secondary btn-sm" data-nav="menus">+ Ajouter</button>
+      </div>
+      ${renderMealsForDashboard(mealsByCategory)}
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <h3 class="h3">Activité</h3>
+        <button class="btn btn-secondary btn-sm" id="open-activity-modal">+ Ajouter</button>
+      </div>
+      ${day.activities && day.activities.length ? day.activities.map(a => renderActivityRow(a)).join("") : `
+        <div class="empty-state">
+          <div class="emoji">🏃</div>
+          <p>Aucune activité enregistrée pour cette journée.</p>
+          <button class="btn btn-primary btn-sm" id="open-activity-modal-2">+ Ajouter une activité</button>
+        </div>`}
+    </div>
+
+    <div class="disclaimer">
+      <span class="ico">ℹ️</span>
+      <span>Les informations fournies par cette application sont des estimations générales et ne remplacent pas l'avis d'un professionnel de santé.</span>
+    </div>
+  `;
+}
+
+function groupMealsByCategory(meals){
+  const cats = {"petit-dejeuner":[], "dejeuner":[], "diner":[], "collation":[]};
+  (meals||[]).forEach(m => { if(cats[m.category]) cats[m.category].push(m); else cats.collation.push(m); });
+  return cats;
+}
+
+const CAT_LABELS = {"petit-dejeuner":"Petit-déjeuner","dejeuner":"Déjeuner","diner":"Dîner","collation":"Collation"};
+const CAT_ICONS = {"petit-dejeuner":"🌅","dejeuner":"☀️","diner":"🌙","collation":"🍎"};
+
+function renderMealsForDashboard(grouped){
+  const cats = ["petit-dejeuner","dejeuner","diner","collation"];
+  const anyMeal = cats.some(c => grouped[c].length);
+  if(!anyMeal){
+    return `
+      <div class="empty-state">
+        <div class="emoji">🍽️</div>
+        <p>Aucun repas enregistré pour cette journée. Ajoutez un menu ou une recette pour commencer.</p>
+        <button class="btn btn-primary btn-sm" data-nav="menus">+ Ajouter un repas</button>
+      </div>`;
+  }
+  return cats.map(c => {
+    if(!grouped[c].length) return "";
+    return grouped[c].map(m => renderMealRow(m)).join("");
+  }).join("");
+}
+
+function renderMealRow(m){
+  return `
+  <div class="list-row" data-meal-row="${m.id}">
+    <div class="row-main">
+      <div class="row-icon">${CAT_ICONS[m.category]||"🍎"}</div>
+      <div style="min-width:0;">
+        <div class="row-title">${esc(m.name)}</div>
+        <div class="row-sub">${CAT_LABELS[m.category]||"Collation"}${m.portions ? " · " + m.portions + (m.portions>1?" portions":" portion") : ""}</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <div class="row-kcal">${round(m.kcal)} kcal</div>
+      <button class="row-del" data-del-meal="${m.id}" aria-label="Supprimer ce repas">✕</button>
+    </div>
+  </div>`;
+}
+
+function renderActivityRow(a){
+  const act = activityById(a.activityId);
+  return `
+  <div class="list-row" data-activity-row="${a.id}">
+    <div class="row-main">
+      <div class="row-icon">${act ? act.icon : "⭐"}</div>
+      <div style="min-width:0;">
+        <div class="row-title">${esc(a.name)}</div>
+        <div class="row-sub">${a.duration} min</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <div class="row-kcal">≈ ${round(a.kcal)} kcal</div>
+      <button class="row-del" data-del-activity="${a.id}" aria-label="Supprimer cette activité">✕</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   12) RENDER — MENUS
+   ============================================================ */
+function renderMenus(){
+  const profile = Storage.getProfile();
+  const needs = calculateDailyEnergyNeeds(profile);
+  const items = MENUS.filter(m => m.cat === State.menuCat);
+
+  const ranges = {
+    "petit-dejeuner": [Math.round(needs*0.20), Math.round(needs*0.28)],
+    "dejeuner": [Math.round(needs*0.32), Math.round(needs*0.40)],
+    "diner": [Math.round(needs*0.28), Math.round(needs*0.36)]
+  };
+  const r = ranges[State.menuCat];
+
+  return `
+    <h1 class="h1">Menus</h1>
+    <p class="subtle" style="margin-top:6px;">Suggestions calculées à partir de votre besoin estimé (≈ ${needs} kcal/jour).</p>
+
+    <div class="menu-cat-scroller" style="margin-top:18px;">
+      ${MENU_CATS.map(c => `<button class="menu-cat-pill ${State.menuCat===c.id?'active':''}" data-menu-cat="${c.id}">${c.icon} ${c.label}</button>`).join("")}
+    </div>
+    <p class="tiny" style="margin-bottom:6px;">Repère indicatif pour ce repas : ≈ ${r[0]}–${r[1]} kcal. Ces répartitions sont un paramètre modifiable, pas une règle universelle.</p>
+
+    <div class="recipe-grid">
+      ${items.map(m => renderRecipeCard(m)).join("")}
+    </div>
+  `;
+}
+
+function renderRecipeCard(m){
+  const totals = calculateRecipeTotals(m.ingredients);
+  return `
+  <button type="button" class="recipe-card" data-open-menu="${m.id}">
+    <div class="thumb">${m.emoji}</div>
+    <div class="body">
+      <div class="title">${esc(m.name)}</div>
+      <div class="kcal">≈ ${round(totals.kcal)} kcal</div>
+      <div class="macro-row">
+        <span class="macro-pill">🥩 ${round(totals.protein)} g</span>
+        <span class="macro-pill">🌾 ${round(totals.carbs)} g</span>
+        <span class="macro-pill">🥑 ${round(totals.fat)} g</span>
+      </div>
+      <div class="meta"><span>⏱ ${m.time} min</span><span>·</span><span>${m.difficulty}</span></div>
+      <span class="btn btn-secondary btn-sm btn-block">Voir la recette</span>
+    </div>
+  </button>`;
+}
+
+function renderMenuModal(menuId){
+  const m = MENUS.find(x => x.id === menuId);
+  if(!m) return "";
+  const totals = calculateRecipeTotals(m.ingredients);
+  return `
+  <div class="overlay" id="menu-overlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(m.name)}" style="position:relative;">
+      <button class="sheet-close" id="close-menu-modal" aria-label="Fermer">✕</button>
+      <div class="sheet-handle"></div>
+      <div style="font-size:44px; text-align:center; margin-bottom:6px;">${m.emoji}</div>
+      <h2 class="h2" style="text-align:center;">${esc(m.name)}</h2>
+      <div style="text-align:center; margin-top:6px;">
+        <span class="badge">⏱ ${m.time} min</span>
+        <span class="badge">${m.difficulty}</span>
+      </div>
+
+      <div class="stat-grid" style="margin-top:20px; grid-template-columns:repeat(4,1fr);">
+        <div class="stat-box"><div class="stat-num">${round(totals.kcal)}</div><div class="stat-lbl">kcal</div></div>
+        <div class="stat-box"><div class="stat-num">${round(totals.protein)}g</div><div class="stat-lbl">protéines</div></div>
+        <div class="stat-box"><div class="stat-num">${round(totals.carbs)}g</div><div class="stat-lbl">glucides</div></div>
+        <div class="stat-box"><div class="stat-num">${round(totals.fat)}g</div><div class="stat-lbl">lipides</div></div>
+      </div>
+
+      <div class="section-block">
+        <h3 class="h3">Ingrédients</h3>
+        <div class="card-flat" style="margin-top:10px;">
+          ${m.ingredients.map(ing => {
+            const f = foodById(ing.food);
+            return `<div class="profile-row"><span class="lbl">${f?f.name:ing.food}</span><span class="val">${ing.g} g</span></div>`;
+          }).join("")}
+        </div>
+      </div>
+
+      <div class="section-block">
+        <h3 class="h3">Préparation</h3>
+        <ol style="margin-top:10px; padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+          ${m.steps.map(s => `<li class="subtle">${esc(s)}</li>`).join("")}
+        </ol>
+      </div>
+
+      <div class="field" style="margin-top:22px;">
+        <label for="portion-input">Portions à ajouter à votre journée</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn btn-secondary" id="portion-minus" aria-label="Diminuer">−</button>
+          <input type="number" id="portion-input" value="1" min="0.5" step="0.5" style="width:80px; text-align:center; border:1.5px solid var(--border); border-radius:14px; padding:12px; font-size:16px;">
+          <button class="btn btn-secondary" id="portion-plus" aria-label="Augmenter">+</button>
+        </div>
+        <div class="error-msg" id="portion-error" style="display:none;"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="add-meal-to-day" data-menu-id="${m.id}">Ajouter à ma journée</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   13) RENDER — ACTIVITÉ
+   ============================================================ */
+function renderActivite(){
+  const day = Storage.getDay(State.selectedDate);
+  const totals = calculateDailyTotal(day);
+  return `
+    <h1 class="h1">Activité</h1>
+    <p class="subtle" style="margin-top:6px;">${formatDateHuman(State.selectedDate)}${State.selectedDate===todayStr() ? " · Aujourd'hui" : ""}</p>
+
+    <div class="card" style="margin-top:18px; text-align:center;">
+      <div class="eyebrow">Total dépensé aujourd'hui</div>
+      <div class="h1" style="margin-top:6px;">≈ ${totals.burned} kcal</div>
+      <p class="tiny" style="margin-top:6px;">Estimation basée sur votre poids, l'activité sélectionnée et sa durée.</p>
+    </div>
+
+    <button class="btn btn-primary btn-block" style="margin-top:20px;" id="open-activity-modal-main">+ Ajouter une activité</button>
+
+    <div class="section-block">
+      <h3 class="h3">Activités du jour</h3>
+      <div style="margin-top:12px;">
+        ${day.activities && day.activities.length ? day.activities.map(a => renderActivityRow(a)).join("") : `
+        <div class="empty-state">
+          <div class="emoji">🏃</div>
+          <p>Aucune activité enregistrée pour le moment.</p>
+        </div>`}
+      </div>
+    </div>
+  `;
+}
+
+function renderActivityModal(){
+  return `
+  <div class="overlay" id="activity-overlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Ajouter une activité" style="position:relative;">
+      <button class="sheet-close" id="close-activity-modal" aria-label="Fermer">✕</button>
+      <div class="sheet-handle"></div>
+      <h2 class="h2">Ajouter une activité</h2>
+
+      <div class="field" style="margin-top:18px;">
+        <label>Type d'activité</label>
+        <div class="choice-list" id="activity-type-list">
+          ${ACTIVITIES_DB.map(a => `
+            <button type="button" class="choice-card activity-choice" data-activity="${a.id}">
+              <strong>${a.icon}&nbsp;&nbsp;${a.name}</strong>
+            </button>`).join("")}
+        </div>
+      </div>
+
+      <div class="field" id="field-duration">
+        <label for="input-duration">Durée (minutes)</label>
+        <input type="number" id="input-duration" inputmode="numeric" placeholder="Ex. 30" min="1">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+
+      <div class="field" id="field-intensity" style="display:none;">
+        <label>Intensité</label>
+        <div class="segmented">
+          <button type="button" class="intensity-choice active" data-intensity="leger">Légère</button>
+          <button type="button" class="intensity-choice" data-intensity="modere">Modérée</button>
+          <button type="button" class="intensity-choice" data-intensity="intense">Intense</button>
+        </div>
+      </div>
+
+      <div class="card-flat" id="activity-preview" style="display:none; text-align:center; margin-bottom:18px;">
+        <div class="eyebrow">Estimation</div>
+        <div class="h2" id="activity-preview-kcal" style="margin-top:4px;">≈ 0 kcal</div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="confirm-add-activity" disabled>Ajouter à ma journée</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   14) RENDER — PROFIL
+   ============================================================ */
+function renderProfil(){
+  const p = Storage.getProfile();
+  const needs = calculateDailyEnergyNeeds(p);
+  const level = levelById(p.activityLevel);
+
+  if(State.editingProfile){
+    return `
+      <h1 class="h1">Modifier mon profil</h1>
+      <div class="field" id="pf-field-age" style="margin-top:20px;">
+        <label for="pf-age">Âge</label>
+        <input type="number" id="pf-age" value="${p.age}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="field">
+        <label>Sexe (pour la formule de calcul)</label>
+        <div class="choice-list">
+          ${["homme","femme","autre"].map(v => `
+            <button type="button" class="choice-card pf-sex-choice ${p.sex===v?'selected':''}" data-sex="${v}">
+              <strong>${v==="homme"?"Homme":v==="femme"?"Femme":"Autre / je préfère ne pas dire"}</strong>
+            </button>`).join("")}
+        </div>
+      </div>
+      <div class="field" id="pf-field-height">
+        <label for="pf-height">Taille (cm)</label>
+        <input type="number" id="pf-height" value="${p.height}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="field" id="pf-field-weight">
+        <label for="pf-weight">Poids (kg)</label>
+        <input type="number" id="pf-weight" value="${p.weight}">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="field">
+        <label>Niveau d'activité</label>
+        <div class="choice-list">
+          ${ACTIVITY_LEVELS.map(l => `
+            <button type="button" class="choice-card pf-level-choice ${p.activityLevel===l.id?'selected':''}" data-level="${l.id}">
+              <strong>${l.label}</strong><span class="level-desc">${l.desc}</span>
+            </button>`).join("")}
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="btn btn-secondary btn-block" id="pf-cancel">Annuler</button>
+        <button class="btn btn-primary btn-block" id="pf-save">Enregistrer</button>
+      </div>
+    `;
+  }
+
+  return `
+    <h1 class="h1">Profil</h1>
+    <div class="hero-card" style="margin-top:18px;">
+      <div class="blob"></div>
+      <div class="eyebrow">Besoin énergétique estimé</div>
+      <div class="h1" style="margin-top:6px;">≈ ${needs} kcal / jour</div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="profile-row"><span class="lbl">Âge</span><span class="val">${p.age} ans</span></div>
+      <div class="profile-row"><span class="lbl">Sexe</span><span class="val">${p.sex==="homme"?"Homme":p.sex==="femme"?"Femme":"Autre"}</span></div>
+      <div class="profile-row"><span class="lbl">Taille</span><span class="val">${p.height} cm</span></div>
+      <div class="profile-row"><span class="lbl">Poids</span><span class="val">${p.weight} kg</span></div>
+      <div class="profile-row"><span class="lbl">Niveau d'activité</span><span class="val">${level ? level.label : "—"}</span></div>
+    </div>
+
+    <button class="btn btn-primary btn-block" style="margin-top:18px;" id="pf-edit">Modifier mon profil</button>
+
+    <div class="disclaimer">
+      <span class="ico">ℹ️</span>
+      <span>Les informations fournies par cette application sont des estimations générales et ne remplacent pas l'avis d'un professionnel de santé.</span>
+    </div>
+
+    <div class="section-block">
+      <h3 class="h3">À venir</h3>
+      <p class="subtle" style="margin-top:8px;">Recettes maison, calendrier, historique, favoris et recherche arrivent dans une prochaine version.</p>
+    </div>
+  `;
+}
+
+/* ============================================================
+   15) EVENT BINDING
+   ============================================================ */
+function bindGlobalEvents(){
+  const app = document.getElementById("app");
+
+  app.querySelectorAll("[data-nav]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      navigate(el.dataset.nav);
+    });
+  });
+
+  // Dashboard date navigation
+  const prev = document.getElementById("date-prev");
+  if(prev) prev.addEventListener("click", () => { State.selectedDate = addDays(State.selectedDate,-1); render(); });
+  const next = document.getElementById("date-next");
+  if(next) next.addEventListener("click", () => {
+    const n = addDays(State.selectedDate,1);
+    if(n <= todayStr()){ State.selectedDate = n; render(); }
+  });
+  const todayBtn = document.getElementById("date-today");
+  if(todayBtn) todayBtn.addEventListener("click", () => { State.selectedDate = todayStr(); render(); });
+
+  // Delete meal / activity
+  app.querySelectorAll("[data-del-meal]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const day = Storage.getDay(State.selectedDate);
+      day.meals = day.meals.filter(m => m.id !== btn.dataset.delMeal);
+      Storage.setDay(State.selectedDate, day);
+      showToast("Repas supprimé", "🗑️");
+      render();
+    });
+  });
+  app.querySelectorAll("[data-del-activity]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const day = Storage.getDay(State.selectedDate);
+      day.activities = day.activities.filter(a => a.id !== btn.dataset.delActivity);
+      Storage.setDay(State.selectedDate, day);
+      showToast("Activité supprimée", "🗑️");
+      render();
+    });
+  });
+
+  // Menu category pills
+  app.querySelectorAll("[data-menu-cat]").forEach(btn => {
+    btn.addEventListener("click", () => { State.menuCat = btn.dataset.menuCat; render(); });
+  });
+
+  // Open menu detail modal
+  app.querySelectorAll("[data-open-menu]").forEach(btn => {
+    btn.addEventListener("click", () => { State.activeMenuModal = btn.dataset.openMenu; render(); });
+  });
+  const closeMenuModal = document.getElementById("close-menu-modal");
+  if(closeMenuModal) closeMenuModal.addEventListener("click", () => { State.activeMenuModal = null; render(); });
+  const menuOverlay = document.getElementById("menu-overlay");
+  if(menuOverlay) menuOverlay.addEventListener("click", (e) => { if(e.target === menuOverlay){ State.activeMenuModal = null; render(); } });
+
+  bindPortionControls();
+  bindAddMealButton();
+
+  // Activity modal open
+  ["open-activity-modal","open-activity-modal-2","open-activity-modal-main"].forEach(id => {
+    const b = document.getElementById(id);
+    if(b) b.addEventListener("click", () => { State.activeActivityModal = true; render(); });
+  });
+  const closeActivityModal = document.getElementById("close-activity-modal");
+  if(closeActivityModal) closeActivityModal.addEventListener("click", () => { State.activeActivityModal = false; render(); });
+  const activityOverlay = document.getElementById("activity-overlay");
+  if(activityOverlay) activityOverlay.addEventListener("click", (e) => { if(e.target === activityOverlay){ State.activeActivityModal = false; render(); } });
+
+  bindActivityModalLogic();
+
+  // Profile edit
+  const pfEdit = document.getElementById("pf-edit");
+  if(pfEdit) pfEdit.addEventListener("click", () => { State.editingProfile = true; render(); });
+  const pfCancel = document.getElementById("pf-cancel");
+  if(pfCancel) pfCancel.addEventListener("click", () => { State.editingProfile = false; render(); });
+  const pfSave = document.getElementById("pf-save");
+  if(pfSave) pfSave.addEventListener("click", saveProfileEdits);
+
+  app.querySelectorAll(".pf-sex-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const p = Storage.getProfile(); p.sex = btn.dataset.sex; Storage.setProfile(p); render();
+    });
+  });
+  app.querySelectorAll(".pf-level-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const p = Storage.getProfile(); p.activityLevel = btn.dataset.level; Storage.setProfile(p); render();
+    });
+  });
+}
+
+function bindPortionControls(){
+  const input = document.getElementById("portion-input");
+  if(!input) return;
+  const minus = document.getElementById("portion-minus");
+  const plus = document.getElementById("portion-plus");
+  minus.addEventListener("click", () => {
+    let v = Math.max(0.5, (Number(input.value)||1) - 0.5);
+    input.value = v;
+  });
+  plus.addEventListener("click", () => {
+    let v = (Number(input.value)||1) + 0.5;
+    input.value = v;
+  });
+}
+
+function bindAddMealButton(){
+  const btn = document.getElementById("add-meal-to-day");
+  if(!btn) return;
+  btn.addEventListener("click", () => {
+    const menuId = btn.dataset.menuId;
+    const menu = MENUS.find(m => m.id === menuId);
+    const portionsInput = document.getElementById("portion-input");
+    const portions = Number(portionsInput.value);
+    const errBox = document.getElementById("portion-error");
+
+    if(!portions || portions <= 0){
+      errBox.textContent = "Veuillez renseigner une quantité supérieure à 0.";
+      errBox.style.display = "block";
+      return;
+    }
+    errBox.style.display = "none";
+
+    const totals = calculateRecipeTotals(menu.ingredients);
+    const day = Storage.getDay(State.selectedDate);
+    day.meals = day.meals || [];
+    day.meals.push({
+      id: uid(),
+      name: menu.name,
+      category: menu.cat,
+      portions: portions,
+      kcal: totals.kcal * portions,
+      protein: totals.protein * portions,
+      carbs: totals.carbs * portions,
+      fat: totals.fat * portions
+    });
+    Storage.setDay(State.selectedDate, day);
+    State.activeMenuModal = null;
+    State.route = "dashboard";
+    render();
+    showToast("Repas ajouté à votre journée", "✓");
+  });
+}
+
+function bindActivityModalLogic(){
+  const list = document.getElementById("activity-type-list");
+  if(!list) return;
+
+  let selectedActivity = null;
+
+  const durationInput = document.getElementById("input-duration");
+  const intensityField = document.getElementById("field-intensity");
+  const preview = document.getElementById("activity-preview");
+  const previewKcal = document.getElementById("activity-preview-kcal");
+  const confirmBtn = document.getElementById("confirm-add-activity");
+  let selectedIntensity = "modere";
+
+  function needsIntensity(id){
+    return ["marche","course","velo","natation","danse"].includes(id);
+  }
+
+  function updatePreview(){
+    const profile = Storage.getProfile();
+    const duration = Number(durationInput.value);
+    if(!selectedActivity || !duration || duration <= 0){
+      preview.style.display = "none";
+      confirmBtn.disabled = true;
+      return;
+    }
+    const act = activityById(selectedActivity);
+    const kcal = calculateBurnedCalories({weight: profile.weight, met: act.met, durationMin: duration, intensity: selectedIntensity});
+    previewKcal.textContent = `≈ ${round(kcal)} kcal`;
+    preview.style.display = "block";
+    confirmBtn.disabled = false;
+  }
+
+  list.querySelectorAll(".activity-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedActivity = btn.dataset.activity;
+      list.querySelectorAll(".activity-choice").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      intensityField.style.display = needsIntensity(selectedActivity) ? "block" : "none";
+      updatePreview();
+    });
+  });
+
+  durationInput.addEventListener("input", updatePreview);
+
+  document.querySelectorAll(".intensity-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".intensity-choice").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedIntensity = btn.dataset.intensity;
+      updatePreview();
+    });
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    const duration = Number(durationInput.value);
+    if(!selectedActivity){
+      showToast("Choisissez un type d'activité.", "⚠️");
+      return;
+    }
+    if(!duration || duration <= 0){
+      fieldError("field-duration", "Veuillez renseigner une durée valide.");
+      return;
+    }
+    const profile = Storage.getProfile();
+    const act = activityById(selectedActivity);
+    const kcal = calculateBurnedCalories({weight: profile.weight, met: act.met, durationMin: duration, intensity: selectedIntensity});
+
+    const day = Storage.getDay(State.selectedDate);
+    day.activities = day.activities || [];
+    day.activities.push({
+      id: uid(),
+      activityId: selectedActivity,
+      name: act.name,
+      duration: duration,
+      kcal: kcal
+    });
+    Storage.setDay(State.selectedDate, day);
+    State.activeActivityModal = false;
+    render();
+    showToast("Activité ajoutée à votre journée", "✓");
+  });
+}
+
+function saveProfileEdits(){
+  const p = Storage.getProfile();
+  clearFieldError("pf-field-age"); clearFieldError("pf-field-height"); clearFieldError("pf-field-weight");
+
+  const age = Number(document.getElementById("pf-age").value);
+  const height = Number(document.getElementById("pf-height").value);
+  const weight = Number(document.getElementById("pf-weight").value);
+  let valid = true;
+
+  if(!age || age <= 0 || age > 120){ fieldError("pf-field-age","Veuillez renseigner un âge valide."); valid = false; }
+  if(!height || height <= 0 || height > 260){ fieldError("pf-field-height","Veuillez renseigner une taille valide."); valid = false; }
+  if(!weight || weight <= 0 || weight > 400){ fieldError("pf-field-weight","Indiquez votre poids pour effectuer l'estimation."); valid = false; }
+
+  if(!valid) return;
+
+  p.age = age; p.height = height; p.weight = weight;
+  Storage.setProfile(p);
+  State.editingProfile = false;
+  render();
+  showToast("Profil mis à jour", "✓");
+}
+
+/* ============================================================
+   16) INIT
+   ============================================================ */
+render();
+</script>
+</body>
+</html>
