@@ -106,9 +106,11 @@ const State = {
   activeMenuModal: null,
   activeActivityModal: false,
   activeCollationModal: false,
+  activeWaterModal: false,
   editingProfile: false,
   lastAddedMealId: null,
   lastAddedActivityId: null,
+  lastAddedWaterId: null,
   recipeDraft: null,
   collationDraft: null,
   savingLock: false
@@ -141,7 +143,8 @@ const ICONS = {
   calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   leaf: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" style="color:var(--sage)"><path d="M11 20A7 7 0 0 1 4 13H2a10 10 0 0 0 10 10 10 10 0 0 0 10-10c0-5-4-10-11-10 3 3 3 7 0 10a5 5 0 0 1-7-7"/></svg>`,
-  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  water: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s7 7.2 7 12.2a7 7 0 0 1-14 0c0-5 7-12.2 7-12.2z"/></svg>`
 };
 
 /* ============================================================
@@ -160,6 +163,7 @@ function render(){
   else if(State.route === "menus") screenHtml = renderMenus();
   else if(State.route === "recette-nouvelle") screenHtml = renderRecipeBuilder();
   else if(State.route === "activite") screenHtml = renderActivite();
+  else if(State.route === "hydratation") screenHtml = renderHydratation();
   else if(State.route === "calendrier") screenHtml = renderCalendrier();
   else if(State.route === "profil") screenHtml = renderProfil();
 
@@ -176,11 +180,12 @@ function render(){
     ${State.activeMenuModal ? renderItemModal(State.activeMenuModal) : ""}
     ${State.activeActivityModal ? renderActivityModal() : ""}
     ${State.activeCollationModal ? renderCollationModal() : ""}
+    ${State.activeWaterModal ? renderWaterModal() : ""}
   `;
   bindGlobalEvents();
 
-  if(State.lastAddedMealId || State.lastAddedActivityId){
-    setTimeout(() => { State.lastAddedMealId = null; State.lastAddedActivityId = null; }, 600);
+  if(State.lastAddedMealId || State.lastAddedActivityId || State.lastAddedWaterId){
+    setTimeout(() => { State.lastAddedMealId = null; State.lastAddedActivityId = null; State.lastAddedWaterId = null; }, 600);
   }
 }
 
@@ -189,6 +194,7 @@ function renderTopNav(){
     {id:"dashboard", label:"Accueil"},
     {id:"menus", label:"Menus"},
     {id:"activite", label:"Activité"},
+    {id:"hydratation", label:"Hydratation"},
     {id:"calendrier", label:"Calendrier"},
     {id:"profil", label:"Profil"}
   ];
@@ -207,6 +213,7 @@ function renderBottomNav(){
     {id:"dashboard", label:"Accueil", icon:ICONS.home},
     {id:"menus", label:"Repas", icon:ICONS.meal},
     {id:"activite", label:"Activité", icon:ICONS.activity},
+    {id:"hydratation", label:"Eau", icon:ICONS.water},
     {id:"calendrier", label:"Calendrier", icon:ICONS.calendar},
     {id:"profil", label:"Profil", icon:ICONS.profile}
   ];
@@ -460,6 +467,14 @@ function renderDashboard(){
           <p>Aucune activité enregistrée pour cette journée.</p>
           <button class="btn btn-primary btn-sm" id="open-activity-modal-2">+ Ajouter une activité</button>
         </div>`}
+    </div>
+
+    <div class="section-block">
+      <div class="section-head">
+        <h3 class="h3">Eau</h3>
+        <a href="#" data-nav="hydratation" class="btn btn-ghost btn-sm">Voir tout</a>
+      </div>
+      ${renderWaterMiniCard(day, profile)}
     </div>
 
     <div style="display:flex; gap:10px; margin-top:18px;">
@@ -947,6 +962,152 @@ function renderCollationModal(){
 }
 
 /* ============================================================
+   HYDRATATION
+   Besoin estimé = poids × 33 ml/kg + bonus selon le niveau d'activité
+   du profil + bonus selon les calories brûlées ce jour-là (activités enregistrées).
+   ============================================================ */
+const WATER_QUICK_AMOUNTS = [
+  {ml:150, label:"Verre", icon:"🥛"},
+  {ml:250, label:"Grand verre", icon:"🥤"},
+  {ml:500, label:"Bouteille", icon:"🍶"}
+];
+
+function getWaterNeedsForDay(profile, day){
+  const totals = Calc.calculateDailyTotal(day);
+  return Calc.calculateWaterNeeds({
+    weight: profile.weight,
+    activityLevel: profile.activityLevel,
+    activityCaloriesToday: totals.burned
+  });
+}
+
+function formatLiters(ml){
+  const l = ml / 1000;
+  // Affiche au plus 2 décimales, sans zéros inutiles (1.20 -> 1.2, 2.00 -> 2)
+  return (Math.round(l * 100) / 100).toString().replace(/\.0$/, "");
+}
+
+function renderWaterMiniCard(day, profile){
+  const totals = Calc.calculateDailyTotal(day);
+  const needs = getWaterNeedsForDay(profile, day);
+  const pct = Math.min(100, Math.round((totals.water / needs) * 100)) || 0;
+  return `
+    <div class="card-flat">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div>
+          <div class="h3" style="display:flex; align-items:center; gap:6px;">💧 ${formatLiters(totals.water)} L</div>
+          <div class="tiny">sur ≈ ${formatLiters(needs)} L estimés</div>
+        </div>
+        <div class="tiny" style="font-weight:700; color:var(--sage-dark);">${pct}%</div>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%;"></div></div>
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        ${WATER_QUICK_AMOUNTS.map(q => `<button class="btn btn-secondary btn-sm" data-quick-water="${q.ml}"><span class="btn-label">${q.icon} +${q.ml >= 1000 ? (q.ml/1000)+'L' : q.ml+'ml'}</span></button>`).join("")}
+      </div>
+    </div>`;
+}
+
+function renderWaterRow(w){
+  const enter = (w.id === State.lastAddedWaterId) ? " row-enter" : "";
+  return `
+  <div class="list-row${enter}" data-water-row="${w.id}">
+    <div class="row-main">
+      <div class="row-icon">💧</div>
+      <div style="min-width:0;">
+        <div class="row-title">${w.ml >= 1000 ? (w.ml/1000)+' L' : w.ml+' ml'}</div>
+        <div class="row-sub">${w.time || ''}</div>
+      </div>
+    </div>
+    <button class="row-del" data-del-water="${w.id}" aria-label="Supprimer cette boisson">✕</button>
+  </div>`;
+}
+
+function renderHydratation(){
+  const profile = Storage.getProfile();
+  const day = Storage.getDay(State.selectedDate);
+  const totals = Calc.calculateDailyTotal(day);
+  const needs = getWaterNeedsForDay(profile, day);
+  const pct = Math.min(100, Math.round((totals.water / needs) * 100)) || 0;
+  const circumference = 452;
+  const offset = circumference - (circumference * Math.min(pct,100) / 100);
+  const isToday = State.selectedDate === todayStr();
+
+  // Moyenne des 7 derniers jours pour donner un repère
+  const last7 = Array.from({length:7}, (_,i) => addDays(todayStr(), -(6-i)));
+  const avgWater = Math.round(last7.reduce((s,d) => s + Calc.calculateDailyTotal(Storage.getDay(d)).water, 0) / 7);
+
+  return `
+    <h1 class="h1">Hydratation</h1>
+    <p class="subtle" style="margin-top:6px;">${formatDateHuman(State.selectedDate)}${isToday ? " · Aujourd'hui" : ""}</p>
+
+    <div class="hero-card" style="margin-top:16px;">
+      <div class="blob" style="background:var(--blue-light);"></div>
+      <div class="blob b2"></div>
+      <div class="eyebrow">Besoin en eau estimé</div>
+      <div class="ring-wrap" style="margin-top:12px;">
+        <svg viewBox="0 0 172 172" width="172" height="172">
+          <circle class="ring-bg" cx="86" cy="86" r="72"></circle>
+          <circle class="ring-fg" cx="86" cy="86" r="72" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="stroke:var(--blue);"></circle>
+        </svg>
+        <div class="ring-center">
+          <div class="num">${formatLiters(totals.water)} L</div>
+          <div class="lbl">sur ≈ ${formatLiters(needs)} L</div>
+        </div>
+      </div>
+      <p class="tiny" style="margin-top:14px;">Calculé à partir de votre poids, votre niveau d'activité et l'activité enregistrée ce jour-là.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-icon">💧</div><div class="stat-num">${totals.water}</div><div class="stat-lbl">ml bu</div></div>
+      <div class="stat-box"><div class="stat-icon">🎯</div><div class="stat-num">${needs}</div><div class="stat-lbl">ml estimés</div></div>
+      <div class="stat-box"><div class="stat-icon">📊</div><div class="stat-num">${pct}%</div><div class="stat-lbl">de l'estimation</div></div>
+      <div class="stat-box"><div class="stat-icon">📅</div><div class="stat-num">${avgWater}</div><div class="stat-lbl">ml moy. 7j</div></div>
+    </div>
+
+    <div class="section-block">
+      <h3 class="h3">Ajout rapide</h3>
+      <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+        ${WATER_QUICK_AMOUNTS.map(q => `<button class="btn btn-secondary" data-quick-water="${q.ml}"><span class="btn-label">${q.icon} +${q.ml >= 1000 ? (q.ml/1000)+'L' : q.ml+'ml'}</span></button>`).join("")}
+        <button class="btn btn-ghost" id="open-water-modal">✎ Quantité personnalisée</button>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3 class="h3">Boissons enregistrées</h3>
+      <div style="margin-top:12px;">
+        ${day.water && day.water.length ? day.water.map(w => renderWaterRow(w)).join("") : `
+        <div class="empty-state">
+          <div class="emoji">💧</div>
+          <p>Aucune boisson enregistrée pour cette journée.</p>
+        </div>`}
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <span class="ico">ℹ️</span>
+      <span>Les informations fournies par cette application sont des estimations générales et ne remplacent pas l'avis d'un professionnel de santé.</span>
+    </div>
+  `;
+}
+
+function renderWaterModal(){
+  return `
+  <div class="overlay" id="water-overlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Ajouter une quantité d'eau" style="position:relative;">
+      <button class="sheet-close" id="close-water-modal" aria-label="Fermer">✕</button>
+      <div class="sheet-handle"></div>
+      <h2 class="h2">Quantité personnalisée</h2>
+      <div class="field" style="margin-top:18px;" id="field-water-ml">
+        <label for="input-water-ml">Quantité (ml)</label>
+        <input type="number" id="input-water-ml" inputmode="numeric" placeholder="Ex. 330" min="1">
+        <div class="error-msg" style="display:none;"></div>
+      </div>
+      <button class="btn btn-primary btn-block" id="confirm-add-water"><span class="btn-label">Ajouter à ma journée</span></button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
    CALENDRIER + HISTORIQUE
    ============================================================ */
 function renderCalendrier(){
@@ -1249,6 +1410,24 @@ function bindGlobalEvents(){
       render();
     });
   });
+  app.querySelectorAll("[data-del-water]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const day = Storage.getDay(State.selectedDate);
+      day.water = day.water.filter(w => w.id !== btn.dataset.delWater);
+      Storage.setDay(State.selectedDate, day);
+      showToast("Boisson supprimée", "🗑️");
+      render();
+    });
+  });
+
+  // Eau : ajout rapide (150 / 250 / 500 ml)
+  app.querySelectorAll("[data-quick-water]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(State.savingLock) return;
+      setButtonSaving(btn, true);
+      addWaterEntry(Number(btn.dataset.quickWater), btn);
+    });
+  });
 
   // Export CSV
   const exportDay = document.getElementById("export-day-csv");
@@ -1347,6 +1526,26 @@ function bindGlobalEvents(){
   const collationOverlay = document.getElementById("collation-overlay");
   if(collationOverlay) collationOverlay.addEventListener("click", (e) => { if(e.target === collationOverlay){ State.activeCollationModal = false; render(); } });
   bindCollationModalEvents();
+
+  // Eau : modal quantité personnalisée
+  const openWaterModal = document.getElementById("open-water-modal");
+  if(openWaterModal) openWaterModal.addEventListener("click", () => { State.activeWaterModal = true; render(); });
+  const closeWaterModal = document.getElementById("close-water-modal");
+  if(closeWaterModal) closeWaterModal.addEventListener("click", () => { State.activeWaterModal = false; render(); });
+  const waterOverlay = document.getElementById("water-overlay");
+  if(waterOverlay) waterOverlay.addEventListener("click", (e) => { if(e.target === waterOverlay){ State.activeWaterModal = false; render(); } });
+  const confirmWaterBtn = document.getElementById("confirm-add-water");
+  if(confirmWaterBtn) confirmWaterBtn.addEventListener("click", () => {
+    if(State.savingLock) return;
+    const input = document.getElementById("input-water-ml");
+    const ml = Number(input.value);
+    clearFieldError("field-water-ml");
+    if(!ml || ml <= 0){
+      fieldError("field-water-ml", "Veuillez renseigner une quantité supérieure à 0.");
+      return;
+    }
+    addWaterEntry(ml, confirmWaterBtn, () => { State.activeWaterModal = false; });
+  });
 
   // Calendar
   app.querySelectorAll("[data-calendar-view]").forEach(btn => {
@@ -1666,6 +1865,28 @@ function bindCollationModalEvents(){
       showToast(ok ? "Collation ajoutée à votre journée" : "Collation ajoutée (non sauvegardée)", ok ? "✓" : "⚠️", ok ? undefined : "warning");
     }, 420);
   });
+}
+
+/* ---------------- Eau : ajout d'une entrée ---------------- */
+function addWaterEntry(ml, btn, onDone){
+  if(State.savingLock) return;
+  State.savingLock = true;
+  if(btn) setButtonSaving(btn, true);
+
+  setTimeout(() => {
+    const day = Storage.getDay(State.selectedDate);
+    day.water = day.water || [];
+    const now = new Date();
+    const timeLabel = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+    const newEntry = { id: uid(), ml: ml, time: timeLabel };
+    day.water.push(newEntry);
+    const ok = Storage.setDay(State.selectedDate, day);
+    State.lastAddedWaterId = newEntry.id;
+    State.savingLock = false;
+    if(onDone) onDone();
+    render();
+    showToast(ok ? "Boisson ajoutée à votre journée" : "Boisson ajoutée (non sauvegardée — stockage indisponible)", ok ? "✓" : "⚠️", ok ? undefined : "warning");
+  }, 420);
 }
 
 /* ---------------- Profile edits ---------------- */

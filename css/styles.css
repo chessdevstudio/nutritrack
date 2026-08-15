@@ -108,10 +108,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (min-width:900px){ .bottomnav{display:none;} }
 .bottomnav button{
   background:none; border:none; display:flex; flex-direction:column; align-items:center;
-  gap:3px; padding:6px 8px; border-radius:14px; color:var(--text-faint); font-size:10.5px; font-weight:700; min-width:50px; flex-shrink:0;
+  gap:3px; padding:6px 5px; border-radius:14px; color:var(--text-faint); font-size:10px; font-weight:700; min-width:46px; flex-shrink:0;
 }
 .bottomnav button.active{color:var(--sage-dark);}
-.bottomnav svg{width:21px; height:21px;}
+.bottomnav svg{width:20px; height:20px;}
 
 /* ============================================================
    TYPOGRAPHY
@@ -196,6 +196,13 @@ h1,h2,h3{font-family:var(--font-display); font-weight:800; letter-spacing:-0.02e
 .ring-wrap svg{transform:rotate(-90deg);}
 .ring-bg{fill:none; stroke:var(--sage-light); stroke-width:14;}
 .ring-fg{fill:none; stroke:var(--sage); stroke-width:14; stroke-linecap:round; transition:stroke-dashoffset .6s ease;}
+
+.progress-bar{
+  width:100%; height:8px; background:var(--blue-light); border-radius:100px; overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%; background:var(--blue); border-radius:100px; transition:width .5s ease;
+}
 .ring-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
 .ring-center .num{font-family:var(--font-display); font-weight:800; font-size:26px;}
 .ring-center .lbl{font-size:12px; color:var(--text-soft); font-weight:600;}

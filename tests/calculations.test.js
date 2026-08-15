@@ -128,37 +128,79 @@ test("calculateBurnedCalories - une durée plus longue brûle davantage", () => 
 // ----------------------------------------------------------------
 // calculateDailyTotal
 // ----------------------------------------------------------------
-test("calculateDailyTotal - additionne repas et activités correctement, arrondi", () => {
+test("calculateDailyTotal - additionne repas, activités et eau correctement, arrondi", () => {
   const day = {
     meals: [{ kcal: 300.4 }, { kcal: 199.8 }],
-    activities: [{ kcal: 150.2 }]
+    activities: [{ kcal: 150.2 }],
+    water: [{ ml: 250 }, { ml: 500.6 }]
   };
   const totals = Calculations.calculateDailyTotal(day);
   assert.equal(totals.consumed, 500);
   assert.equal(totals.burned, 150);
+  assert.equal(totals.water, 751);
 });
 
-test("calculateDailyTotal - journée vide renvoie zéro", () => {
+test("calculateDailyTotal - journée vide renvoie zéro, y compris pour l'eau", () => {
+  const totals = Calculations.calculateDailyTotal({ meals: [], activities: [], water: [] });
+  assert.deepEqual(totals, { consumed: 0, burned: 0, water: 0 });
+});
+
+test("calculateDailyTotal - tolère l'absence du tableau water (anciennes journées)", () => {
   const totals = Calculations.calculateDailyTotal({ meals: [], activities: [] });
-  assert.deepEqual(totals, { consumed: 0, burned: 0 });
+  assert.equal(totals.water, 0);
+});
+
+// ----------------------------------------------------------------
+// calculateWaterNeeds
+// ----------------------------------------------------------------
+test("calculateWaterNeeds - base : poids x 33 ml/kg pour un profil sédentaire sans activité du jour", () => {
+  const ml = Calculations.calculateWaterNeeds({ weight: 70, activityLevel: "sedentaire", activityCaloriesToday: 0 });
+  // 70 * 33 = 2310
+  assert.equal(ml, 2310);
+});
+
+test("calculateWaterNeeds - le niveau d'activité général du profil augmente le besoin", () => {
+  const base = { weight: 70, activityCaloriesToday: 0 };
+  const sed = Calculations.calculateWaterNeeds({ ...base, activityLevel: "sedentaire" });
+  const actif = Calculations.calculateWaterNeeds({ ...base, activityLevel: "tres_actif" });
+  assert.ok(actif > sed, "un profil très actif doit avoir un besoin en eau plus élevé");
+  assert.equal(actif - sed, 800);
+});
+
+test("calculateWaterNeeds - l'activité physique du jour ajoute de l'eau supplémentaire", () => {
+  const sansActivite = Calculations.calculateWaterNeeds({ weight: 70, activityLevel: "modere", activityCaloriesToday: 0 });
+  const avecActivite = Calculations.calculateWaterNeeds({ weight: 70, activityLevel: "modere", activityCaloriesToday: 400 });
+  // 400 kcal * 0.5 ml/kcal = 200 ml de plus
+  assert.equal(avecActivite - sansActivite, 200);
+});
+
+test("calculateWaterNeeds - niveau d'activité inconnu n'ajoute aucun bonus (pas d'erreur)", () => {
+  const ml = Calculations.calculateWaterNeeds({ weight: 70, activityLevel: "inexistant", activityCaloriesToday: 0 });
+  assert.equal(ml, 2310);
+});
+
+test("calculateWaterNeeds - des calories d'activité négatives ne réduisent jamais le besoin", () => {
+  const ml = Calculations.calculateWaterNeeds({ weight: 70, activityLevel: "sedentaire", activityCaloriesToday: -50 });
+  assert.equal(ml, 2310);
 });
 
 // ----------------------------------------------------------------
 // calculateWeeklyAverage / calculateMonthlyStats
 // ----------------------------------------------------------------
-test("calculateWeeklyAverage - calcule la moyenne sur plusieurs jours", () => {
+test("calculateWeeklyAverage - calcule la moyenne sur plusieurs jours, y compris l'eau", () => {
   const days = {
-    "2026-08-10": { meals: [{ kcal: 1000 }], activities: [] },
-    "2026-08-11": { meals: [{ kcal: 2000 }], activities: [] }
+    "2026-08-10": { meals: [{ kcal: 1000 }], activities: [], water: [{ ml: 1500 }] },
+    "2026-08-11": { meals: [{ kcal: 2000 }], activities: [], water: [{ ml: 2500 }] }
   };
   const avg = Calculations.calculateWeeklyAverage(days);
   assert.equal(avg.avgConsumed, 1500);
+  assert.equal(avg.avgWater, 2000);
   assert.equal(avg.count, 2);
 });
 
 test("calculateWeeklyAverage - aucun jour renvoie des moyennes à zéro sans erreur", () => {
   const avg = Calculations.calculateWeeklyAverage({});
-  assert.deepEqual(avg, { avgConsumed: 0, avgBurned: 0, count: 0 });
+  assert.deepEqual(avg, { avgConsumed: 0, avgBurned: 0, avgWater: 0, count: 0 });
 });
 
 test("calculateMonthlyStats - compte correctement jours/repas/activités enregistrés", () => {

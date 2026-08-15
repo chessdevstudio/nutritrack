@@ -68,20 +68,42 @@
   }
 
   // ----------------------------------------------------------------
+  // Besoin en eau — base (poids) + niveau d'activité général + activité du jour
+  // Constantes regroupées ici pour rester faciles à ajuster.
+  // ----------------------------------------------------------------
+  const WATER_ML_PER_KG = 33; // ml d'eau de base par kg de poids corporel (ordre de grandeur usuel : 30-35 ml/kg)
+  const WATER_ACTIVITY_LEVEL_BONUS = {
+    sedentaire: 0,
+    peu_actif: 200,
+    modere: 400,
+    actif: 600,
+    tres_actif: 800
+  };
+  const WATER_ML_PER_KCAL_BURNED = 0.5; // ml supplémentaires par kcal dépensée via l'activité enregistrée du jour
+
+  function calculateWaterNeeds({ weight, activityLevel, activityCaloriesToday }) {
+    const base = weight * WATER_ML_PER_KG;
+    const levelBonus = WATER_ACTIVITY_LEVEL_BONUS[activityLevel] || 0;
+    const dailyBonus = Math.max(0, activityCaloriesToday || 0) * WATER_ML_PER_KCAL_BURNED;
+    return Math.round(base + levelBonus + dailyBonus);
+  }
+
+  // ----------------------------------------------------------------
   // Agrégats quotidiens / hebdomadaires / mensuels
   // ----------------------------------------------------------------
   function calculateDailyTotal(day) {
     const consumed = (day.meals || []).reduce((s, m) => s + m.kcal, 0);
     const burned = (day.activities || []).reduce((s, a) => s + a.kcal, 0);
-    return { consumed: Math.round(consumed), burned: Math.round(burned) };
+    const water = (day.water || []).reduce((s, w) => s + w.ml, 0);
+    return { consumed: Math.round(consumed), burned: Math.round(burned), water: Math.round(water) };
   }
 
   function calculateWeeklyAverage(days) {
     const vals = Object.values(days || {});
-    if (!vals.length) return { avgConsumed: 0, avgBurned: 0, count: 0 };
-    let c = 0, b = 0;
-    vals.forEach(d => { const t = calculateDailyTotal(d); c += t.consumed; b += t.burned; });
-    return { avgConsumed: Math.round(c / vals.length), avgBurned: Math.round(b / vals.length), count: vals.length };
+    if (!vals.length) return { avgConsumed: 0, avgBurned: 0, avgWater: 0, count: 0 };
+    let c = 0, b = 0, w = 0;
+    vals.forEach(d => { const t = calculateDailyTotal(d); c += t.consumed; b += t.burned; w += t.water; });
+    return { avgConsumed: Math.round(c / vals.length), avgBurned: Math.round(b / vals.length), avgWater: Math.round(w / vals.length), count: vals.length };
   }
 
   function calculateMonthlyStats(days) {
@@ -105,6 +127,7 @@
     calculateRecipeTotals,
     calculateCaloriesPerPortion,
     calculateBurnedCalories,
+    calculateWaterNeeds,
     calculateDailyTotal,
     calculateWeeklyAverage,
     calculateMonthlyStats

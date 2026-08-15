@@ -79,7 +79,9 @@
     },
     getDay(dateStr) {
       const days = this.getAllDays();
-      return days[dateStr] || { date: dateStr, meals: [], activities: [] };
+      const day = days[dateStr] || { date: dateStr, meals: [], activities: [], water: [] };
+      if (!day.water) day.water = []; // journées créées avant l'ajout du suivi hydratation
+      return day;
     },
     setDay(dateStr, dayData) {
       const days = this.getAllDays();
